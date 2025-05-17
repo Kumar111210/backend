@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Calculator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .calculator {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            max-width: 90%;
+        }
+        .display {
+            width: 100%;
+            height: 60px;
+            margin-bottom: 15px;
+            font-size: 28px;
+            text-align: right;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            overflow-x: auto;
+        }
+        .history {
+            max-height: 100px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+        button {
+            padding: 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            background-color: #e8ecef;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #d8dfe6;
+            transform: scale(1.05);
+        }
+        .operator {
+            background-color: #ff8c00;
+            color: white;
+        }
+        .operator:hover {
+            background-color: #e07b00;
+        }
+        .function {
+            background-color: #4caf50;
+            color: white;
+        }
+        .function:hover {
+            background-color: #43a047;
+        }
+        .memory {
+            background-color: #2196f3;
+            color: white;
+        }
+        .memory:hover {
+            background-color: #1e88e5;
+        }
+        .equals {
+            background-color: #ff5722;
+            color: white;
+        }
+        .equals:hover {
+            background-color: #e64a19;
+        }
+        .clear {
+            background-color: #f44336;
+            color: white;
+        }
+        .clear:hover {
+            background-color: #d32f2f;
+        }
+        @media (max-width: 400px) {
+            .calculator {
+                width: 100%;
+                padding: 15px;
+            }
+            button {
+                padding: 12px;
+                font-size: 16px;
+            }
+            .display {
+                font-size: 24px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" class="display" id="display" readonly value="0">
+        <div class="history" id="history"></div>
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button class="memory" onclick="memoryClear()">MC</button>
+            <button class="memory" onclick="memoryRecall()">MR</button>
+            <button class="memory" onclick="memoryAdd()">M+</button>
+            <button class="memory" onclick="memorySubtract()">M-</button>
+            <button class="function" onclick="applyFunction('pi')">π</button>
+            <button onclick="appendToDisplay('(')">(</button>
+            <button onclick="appendToDisplay(')')">)</button>
+            <button class="function" onclick="applyFunction('sqrt')">√</button>
+            <button class="function" onclick="applyFunction('pow')">^</button>
+            <button class="function" onclick="applyFunction('factorial')">!</button>
+            <button class="function" onclick="applyFunction('e')">e</button>
+            <button class="function" onclick="applyFunction('sin')">sin</button>
+            <button class="function" onclick="applyFunction('cos')">cos</button>
+            <button class="function" onclick="applyFunction('tan')">tan</button>
+            <button class="function" onclick="applyFunction('log')">log</button>
+            <button class="function" onclick="applyFunction('ln')">ln</button>
+            <button class="function" onclick="applyFunction('abs')">|x|</button>
+            <button class="operator" onclick="appendToDisplay('/')">÷</button>
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button class="operator" onclick="appendToDisplay('*')">×</button>
+            <button class="function" onclick="applyFunction('percent')">%</button>
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button class="operator" onclick="appendToDisplay('-')">-</button>
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button class="operator" onclick="appendToDisplay('+')">+</button>
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+            <button onclick="backspace()">←</button>
+            <button class="equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let display = document.getElementById('display');
+        let history = document.getElementById('history');
+        let memory = 0;
+        let calculationHistory = [];
+
+        function appendToDisplay(value) {
+            if (display.value === '0' && value !== '.') {
+                display.value = value;
+            } else if (display.value === 'Error') {
+                display.value = value;
+            } else {
+                display.value += value;
+            }
+        }
+
+        function clearDisplay() {
+            display.value = '0';
+        }
+
+        function backspace() {
+            display.value = display.value.slice(0, -1);
+            if (display.value === '') {
+                display.value = '0';
+            }
+        }
+
+        function memoryClear() {
+            memory = 0;
+        }
+
+        function memoryRecall() {
+            display.value = memory.toString();
+        }
+
+        function memoryAdd() {
+            try {
+                memory += parseFloat(eval(display.value.replace('÷', '/').replace('×', '*').replace('^', '**')));
+            } catch (e) {
+                display.value = 'Error';
+            }
+        }
+
+        function memorySubtract() {
+            try {
+                memory -= parseFloat(eval(display.value.replace('÷', '/').replace('×', '*').replace('^', '**')));
+            } catch (e) {
+                display.value = 'Error';
+            }
+        }
+
+        function applyFunction(func) {
+            try {
+                let value = parseFloat(display.value);
+                if (func === 'sqrt') {
+                    if (value < 0) throw new Error('Invalid input');
+                    display.value = Math.sqrt(value);
+                } else if (func === 'pow') {
+                    display.value += '^';
+                } else if (func === 'percent') {
+                    display.value = value / 100;
+                } else if (func === 'factorial') {
+                    if (!Number.isInteger(value) || value < 0) throw new Error('Invalid input');
+                    let result = 1;
+                    for (let i = 2; i <= value; i++) result *= i;
+                    display.value = result;
+                } else if (func === 'sin') {
+                    display.value = Math.sin(value * Math.PI / 180); // Convert degrees to radians
+                } else if (func === 'cos') {
+                    display.value = Math.cos(value * Math.PI / 180);
+                } else if (func === 'tan') {
+                    if (Math.abs(value % 180) === 90) throw new Error('Invalid input');
+                    display.value = Math.tan(value * Math.PI / 180);
+                } else if (func === 'log') {
+                    if (value <= 0) throw new Error('Invalid input');
+                    display.value = Math.log10(value);
+                } else if (func === 'ln') {
+                    if (value <= 0) throw new Error('Invalid input');
+                    display.value = Math.log(value);
+                } else if (func === 'abs') {
+                    display.value = Math.abs(value);
+                } else if (func === 'pi') {
+                    display.value = Math.PI;
+                } else if (func === 'e') {
+                    display.value = Math.E;
+                }
+            } catch (e) {
+                display.value = 'Error';
+            }
+        }
+
+        function calculate() {
+            try {
+                let expression = display.value.replace('÷', '/').replace('×', '*').replace('^', '**');
+                let result = eval(expression);
+                if (result === Infinity || result === -Infinity || isNaN(result)) {
+                    display.value = 'Error';
+                } else {
+                    display.value = result;
+                    calculationHistory.push(`${expression} = ${result}`);
+                    if (calculationHistory.length > 5) calculationHistory.shift();
+                    updateHistory();
+                }
+            } catch (e) {
+                display.value = 'Error';
+            }
+        }
+
+        function updateHistory() {
+            history.innerHTML = calculationHistory.map(item => `<div>${item}</div>`).join('');
+        }
+
+        // Keyboard input handling
+        document.addEventListener('keydown', (event) => {
+            const key = event.key;
+            if (key >= '0' && key <= '9' || key === '.') {
+                appendToDisplay(key);
+            } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+                appendToDisplay(key);
+            } else if (key === 'Enter') {
+                calculate();
+            } else if (key === 'Escape') {
+                clearDisplay();
+            } else if (key === 'Backspace') {
+                backspace();
+            } else if (key === '(' || key === ')') {
+                appendToDisplay(key);
+            } else if (key === '%') {
+                applyFunction('percent');
+            } else if (key === '^') {
+                appendToDisplay('^');
+            }
+        });
+    </script>
+</body>
+</html>
